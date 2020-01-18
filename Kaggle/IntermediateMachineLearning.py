@@ -48,7 +48,11 @@ def score_dataset(X_train, X_val, y_train, y_val):
     pred = model.predict(X_val)
     return mean_absolute_error(y_val, pred)
 
+<<<<<<< HEAD
+# Approach 1
+=======
 
+>>>>>>> 4cfe0e9f19e2bc84dfaac4e8e001b92db6b303aa
 # this step, you'll preprocess the data in X_train and X_valid to remove columns with missing values.
 #  Set the preprocessed DataFrames to reduced_X_train and reduced_X_valid, respectively.
 columns_with_missing_values = [cols for cols in train_X
@@ -60,6 +64,10 @@ reduced_X_valid = val_X.drop(columns_with_missing_values, axis=1)
 print("MAE (Drop columns with missing values):")
 print(score_dataset(reduced_X_train, reduced_X_valid, train_y, val_y))
 
+<<<<<<< HEAD
+# Approach 2
+=======
+>>>>>>> 4cfe0e9f19e2bc84dfaac4e8e001b92db6b303aa
 # Try another approach by replacing missing values with mean values of their respective columns
 from sklearn.impute import SimpleImputer
 
@@ -95,3 +103,40 @@ preds_final.shape
 output = pd.DataFrame({'Id': X_test.index,
                        'SalePrice': preds_final})
 output.to_csv('submission.csv', index=False)
+<<<<<<< HEAD
+
+# Approach 3
+train_X_plus = train_X.copy()
+val_X_plus = val_X.copy()
+X_test_plus = X_test.copy()
+
+
+for cols in columns_with_missing_values:
+    train_X_plus[cols + 'was_missing'] = train_X[cols].isnull()
+    val_X_plus[cols + 'was_missing'] = val_X[cols].isnull()
+    X_test_plus[cols + 'was_missing'] = X_test[cols].isnull()
+
+my_imputer2 = SimpleImputer()
+imputed_train_X_plus = pd.DataFrame(my_imputer2.fit_transform(train_X_plus))
+imputed_val_X_plus = pd.DataFrame(my_imputer2.fit_transform(val_X_plus))
+imputed_X_test_plus = pd.DataFrame(my_imputer2.fit_transform(X_test_plus))
+
+imputed_train_X_plus.columns = train_X_plus.columns
+imputed_val_X_plus.columns = val_X_plus.columns
+imputed_X_test_plus.columns = X_test_plus.columns
+
+print('MAE with extended Imputation Model:')
+print(score_dataset(imputed_train_X_plus, imputed_val_X_plus, train_y, val_y))
+
+# Genrate MAE for test data using model
+model = RandomForestRegressor(random_state=0)
+model.fit(imputed_train_X_plus, train_y)
+# impute test data
+preds_final = model.predict(imputed_X_test_plus)
+preds_final.shape
+# Save test predictions to file
+output = pd.DataFrame({'Id': X_test.index,
+                       'SalePrice': preds_final})
+output.to_csv('submission2.csv', index=False)
+=======
+>>>>>>> 4cfe0e9f19e2bc84dfaac4e8e001b92db6b303aa
