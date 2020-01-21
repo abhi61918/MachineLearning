@@ -124,3 +124,26 @@ OH_X_valid = pd.concat([num_X_valid, OH_valid_cols], axis=1)
 
 print("MAE from Approach 3 (One-Hot Encoding):")
 print(score_dataset(OH_X_train, OH_X_valid, y_train, y_valid))
+
+# Run model on test data
+# X_test_plus = X_test.copy()
+# columns_with_missing_values = [cols for cols in X_test
+#                                if X_test[cols].isnull().any()]
+# for cols in columns_with_missing_values:
+#     X_test_plus[cols + 'was_missing'] = X_test[cols].isnull()
+# Categorical data in test data has missing values. Need to impute them using most frequent values in those columns
+from sklearn.impute import SimpleImputer
+my_imputer = SimpleImputer(strategy='most_frequent')
+final_X_test = pd.DataFrame(my_imputer.fit_transform(X_test))
+final_X_test.columns = X_test.columns
+OH_test_cols = pd.DataFrame(OH_encoder.transform(final_X_test[low_cardinality_cols]))
+OH_test_cols.index = X_test.index
+num_X_test = X_test.drop(categorical_columns, axis=1)
+OH_X_test = pd.concat([num_X_test, OH_test_cols], axis=1)
+
+model = RandomForestRegressor(n_estimators=100, random_state=0)
+model.fit(OH_X_train, y_train)
+preds_final = model.predict(OH_X_test)
+output = pd.DataFrame({'Id': X_test.index,
+                       'SalePrice': preds_final})
+output.to_csv('submission3.csv', index=False)
