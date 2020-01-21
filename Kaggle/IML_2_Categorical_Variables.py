@@ -88,7 +88,39 @@ print(score_dataset(label_X_train, label_X_valid, y_train, y_valid))
 # APPROACH 3
 # One hot encoding
 # Make a column for each unique value in a categorical column and assign 1 or 0 to it depending on what value it is
-# For this approach to work the no of unique values should be less else the no. of columns added will be huge
+# For this approach to work the no of unique values should be less, else the no. of columns added will be huge
 # Hence lets explore the cardinality of each column ie the number of unique values in each column
 for cols in good_label_cols:
     print(f'{cols}: {(X_train[cols].nunique())}')
+
+# Lets take cols with cardinality less than 10
+low_cardinality_cols = [cols for cols in good_label_cols
+                        if X_train[cols].nunique() < 10]
+
+# We are using good_label_cols to avoid the discussed scenario earlier but One Hot Encoder has option to ignore
+# validation categorical data that is not there in training and hence we can use all object_cols instead of just
+# good_label_cols
+low_cardinality_cols = [cols for cols in categorical_columns
+                        if X_train[cols].nunique() < 10]
+print(low_cardinality_cols)
+
+from sklearn.preprocessing import OneHotEncoder
+# handle_unknown setting to ignore, ignores if categories other than testing data are there in validation data
+# sparse if true returns a sparse matrix instead of numpy. We need numpy
+OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+# Now lets encode the columns we need ie low_cardinality_cols
+OH_train_cols = pd.DataFrame(OH_encoder.fit_transform(X_train[low_cardinality_cols]))
+OH_valid_cols = pd.DataFrame(OH_encoder.transform(X_valid[low_cardinality_cols]))
+# OH Encoding removes index. Add back index
+OH_train_cols.index = X_train.index
+OH_valid_cols.index = X_valid.index
+
+# Now since we have columns representing the categorical columns we can drop them from original data and append OH_cols
+num_X_train = X_train.drop(categorical_columns, axis=1)
+num_X_valid = X_valid.drop(categorical_columns, axis=1)
+
+OH_X_train = pd.concat([num_X_train, OH_train_cols], axis=1)
+OH_X_valid = pd.concat([num_X_valid, OH_valid_cols], axis=1)
+
+print("MAE from Approach 3 (One-Hot Encoding):")
+print(score_dataset(OH_X_train, OH_X_valid, y_train, y_valid))
