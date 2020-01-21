@@ -136,14 +136,17 @@ from sklearn.impute import SimpleImputer
 my_imputer = SimpleImputer(strategy='most_frequent')
 final_X_test = pd.DataFrame(my_imputer.fit_transform(X_test))
 final_X_test.columns = X_test.columns
+# Imputed data is now in final_X_test. Using this for OH encoding
 OH_test_cols = pd.DataFrame(OH_encoder.transform(final_X_test[low_cardinality_cols]))
-OH_test_cols.index = X_test.index
-num_X_test = X_test.drop(categorical_columns, axis=1)
+OH_test_cols.index = final_X_test.index
+num_X_test = final_X_test.drop(categorical_columns, axis=1)
 OH_X_test = pd.concat([num_X_test, OH_test_cols], axis=1)
 
 model = RandomForestRegressor(n_estimators=100, random_state=0)
 model.fit(OH_X_train, y_train)
+
 preds_final = model.predict(OH_X_test)
-output = pd.DataFrame({'Id': X_test.index,
+output = pd.DataFrame({'Id': OH_X_test.index,
                        'SalePrice': preds_final})
 output.to_csv('submission3.csv', index=False)
+
