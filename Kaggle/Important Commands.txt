@@ -1,0 +1,4 @@
+# Print data in a good format
+from tabulate import tabulate
+pdtabulate=lambda df:tabulate(df,headers='keys',tablefmt='psql')
+print(pdtabulate(X_train.head()))
