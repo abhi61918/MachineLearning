@@ -78,3 +78,15 @@ print(f'MAE: {mae}')
 
 # Predict test data directly
 preds_final = my_pipeline.predict(X_test)
+
+
+# Cross validation on model
+my_pipeline2 = Pipeline(steps=[
+    ('preprocessor', SimpleImputer()),
+    ('model', RandomForestRegressor(n_estimators=50, random_state=0))
+])
+from sklearn.model_selection import cross_val_score
+# Combine training and validation data sets as cross validation will do that by itself
+X = X_full[numerical_cols]
+scores = -1 * cross_val_score(my_pipeline2, X, y, cv=5, scoring='neg_mean_absolute_error')
+print(scores.mean())
