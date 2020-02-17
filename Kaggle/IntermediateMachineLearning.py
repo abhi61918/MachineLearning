@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd 
 
 X_full = pd.read_csv('train.csv', index_col='Id')
 X_test_full = pd.read_csv('test.csv', index_col='Id')
